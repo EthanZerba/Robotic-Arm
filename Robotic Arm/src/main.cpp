@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Servo.h>
+#include <Stepper.h>
 
 
 const int stepsPerRevolution = 200; // Adjust based on your stepper motor
@@ -178,19 +178,41 @@ void moveToPosition(float X_End_Effector, float Y_End_Effector, float Z_End_Effe
 }
 
 void loop() {
-    double x = 0.5, y = 0.3; // Example values, replace with actual input
-    double theta1, theta2;
-    calculateJointAngles(x, y, theta1, theta2);
+    // Check if there is any serial input
+    if (Serial.available() > 0) {
+        // Read the input as a string
+        String inputString = Serial.readStringUntil('\n'); // Assuming inputs are newline-separated
+        // Parse the input string into X, Y, Z coordinates
+        float X, Y, Z;
+        int firstComma = inputString.indexOf(',');
+        int secondComma = inputString.indexOf(',', firstComma + 1);
+        
+        if (firstComma != -1 && secondComma != -1) {
+            X = inputString.substring(0, firstComma).toFloat(); // Convert to float
+            Y = inputString.substring(firstComma + 1, secondComma).toFloat(); // Convert to float
+            Z = inputString.substring(secondComma + 1).toFloat(); // Convert to float
 
-    theta1 = theta1 * (180.0 / M_PI);
-    theta2 = theta2 * (180.0 / M_PI);
+            // Assuming the input is in meters and needs to be converted to the unit your system uses
+            X *= 1000; // Convert meters to millimeters if necessary
+            Y *= 1000; // Convert meters to millimeters if necessary
+            Z *= 1000; // Convert meters to millimeters if necessary
 
-    Serial.print("Joint 1 angle: ");
-    Serial.print(theta1);
-    Serial.println(" degrees");
-    Serial.print("Joint 2 angle: ");
-    Serial.print(theta2);
-    Serial.println(" degrees");
+            // Move to the new position
+            moveToPosition(X, Y, Z);
 
-    delay(1000); // Delay for a second before the next loop iteration
+            // Output the angles of all joints
+            Serial.print("Theta_1: ");
+            Serial.print(Theta_1);
+            Serial.print(" degrees, Theta_2: ");
+            Serial.print(Theta_2);
+            Serial.print(" degrees, Theta_3: ");
+            Serial.print(Theta_3);
+            Serial.print(" degrees, Theta_4: ");
+            Serial.println(Theta_4);
+        } else {
+            Serial.println("Error: Invalid input format. Please input as X,Y,Z in meters.");
+        }
+    }
+
+    delay(100); // Short delay to allow for serial communication stability
 }
