@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Stepper.h>
+#include <Servo.h>
 
 
 const int stepsPerRevolution = 200; // Adjust based on your stepper motor
@@ -178,8 +178,19 @@ void moveToPosition(float X_End_Effector, float Y_End_Effector, float Z_End_Effe
 }
 
 void loop() {
-    // Example: Move the arm to a specific position
-    moveToPosition(100.0, 150.0, 50.0); // Adjust these values as needed
-  
+    double x = 0.5, y = 0.3; // Example values, replace with actual input
+    double theta1, theta2;
+    calculateJointAngles(x, y, theta1, theta2);
+
+    theta1 = theta1 * (180.0 / M_PI);
+    theta2 = theta2 * (180.0 / M_PI);
+
+    Serial.print("Joint 1 angle: ");
+    Serial.print(theta1);
+    Serial.println(" degrees");
+    Serial.print("Joint 2 angle: ");
+    Serial.print(theta2);
+    Serial.println(" degrees");
+
     delay(1000); // Delay for a second before the next loop iteration
 }
