@@ -2,10 +2,10 @@
 #include <AccelStepper.h>
 
 // Stepper Motor Definitions
-AccelStepper stepper1(AccelStepper::DRIVER, 18, 5); // Stepper motor 1 using DRIVER mode
-AccelStepper stepper2(AccelStepper::DRIVER, 21, 19); // Stepper motor 2 using DRIVER mode
-AccelStepper stepper3(AccelStepper::DRIVER, 23, 22); // Stepper motor 3 using DRIVER mode
-AccelStepper stepper4(AccelStepper::FULL4WIRE, 8, 10, 9, 11); // 28BYJ-48 motor with ULN2003 driver
+AccelStepper stepper1(AccelStepper::DRIVER, 5, 18); // Stepper motor 1 using DRIVER mode
+AccelStepper stepper2(AccelStepper::DRIVER, 19, 21); // Stepper motor 2 using DRIVER mode
+AccelStepper stepper3(AccelStepper::DRIVER, 22, 23); // Stepper motor 3 using DRIVER mode
+AccelStepper stepper4(AccelStepper::FULL4WIRE, 12, 12, 14, 27); // 28BYJ-48 motor with ULN2003 driver
 
 // Arm Segment Lengths (in mm)
 const float L1 = 25.0; // Base to first joint
@@ -94,18 +94,43 @@ void moveSteppersToCalculatedPositions() {
     }
 }
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     initializeSteppers();
     Serial.println("Manually extend the arm fully in the positive X direction. Press any key to confirm...");
     while (!Serial.available()) {}
     Serial.read();
     Serial.println("Calibration complete. The arm is now at the 0 reference position.");
+    Serial.println("Enter coordinates in the format X,Y,Z:");
+
 }
 
 void loop() {
-    // Placeholder target position for demonstration
-    calculateIK(100, 100, 0);
-    moveSteppersToCalculatedPositions();
-    // Add any necessary delay or additional logic for continuous operation
+    if (Serial.available() > 0) {
+        // Read the incoming string until newline character
+        String inputString = Serial.readStringUntil('\n');
+        
+        // Split the string into X, Y, and Z coordinates
+        int commaIndex1 = inputString.indexOf(',');
+        int commaIndex2 = inputString.indexOf(',', commaIndex1 + 1);
+        
+        float X = inputString.substring(0, commaIndex1).toFloat();
+        float Y = inputString.substring(commaIndex1 + 1, commaIndex2).toFloat();
+        float Z = inputString.substring(commaIndex2 + 1).toFloat();
+        
+        // Debug print the parsed coordinates
+        Serial.print("Moving to X: ");
+        Serial.print(X);
+        Serial.print(" Y: ");
+        Serial.print(Y);
+        Serial.print(" Z: ");
+        Serial.println(Z);
+        
+        // Calculate inverse kinematics and move
+        calculateIK(X, Y, Z);
+        moveSteppersToCalculatedPositions();
+        
+        // Ask for the next coordinates
+        Serial.println("Enter coordinates in the format X,Y,Z:");
+    }
 }
 
