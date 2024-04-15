@@ -60,17 +60,17 @@ void calculateIK(float X, float Y, float Z) {
 }
 
 void initializeSteppers() {
-    stepper1.setMaxSpeed(1000);
-    stepper1.setAcceleration(500);
+    stepper1.setMaxSpeed(500);
+    stepper1.setAcceleration(250);
     
-    stepper2.setMaxSpeed(1000);
-    stepper2.setAcceleration(500);
+    stepper2.setMaxSpeed(10000);
+    stepper2.setAcceleration(5000);
     
-    stepper3.setMaxSpeed(1000);
-    stepper3.setAcceleration(500);
+    stepper3.setMaxSpeed(500);
+    stepper3.setAcceleration(250);
     
-    stepper4.setMaxSpeed(1000);
-    stepper4.setAcceleration(500);
+    stepper4.setMaxSpeed(500);
+    stepper4.setAcceleration(250);
 }
 void moveSteppersToCalculatedPositions() {
     int steps1 = (Theta_1 * stepsPerRevolution) / 360.0;
@@ -94,7 +94,7 @@ void moveSteppersToCalculatedPositions() {
     }
 }
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     initializeSteppers();
     Serial.println("Manually extend the arm fully in the positive X direction. Press any key to confirm...");
     while (!Serial.available()) {}
