@@ -8,10 +8,10 @@ AccelStepper stepper3(AccelStepper::DRIVER, 22, 23); // Stepper motor 3 using DR
 AccelStepper stepper4(AccelStepper::FULL4WIRE, 12, 12, 14, 27); // 28BYJ-48 motor with ULN2003 driver
 
 // Arm Segment Lengths (in mm)
-const float L1 = 25.0; // Base to first joint
-const float L2 = 125.0; // First to second joint
-const float L3 = 125.0; // Second to third joint
-const float L4 = 10.0;  // Third joint to end effector
+const float L1 = 110.0; // Base to first joint
+const float L2 = 255.0; // First to second joint
+const float L3 = 240.0; // Second to third joint
+const float L4 = 50.0;  // Third joint to end effector
 
 // Steps per revolution for stepper motors
 const int stepsPerRevolution = 200 * 16; // For NEMA 17 stepper motors (with microstepping)
@@ -24,8 +24,8 @@ const float THETA_3_MIN = -30.0, THETA_3_MAX = 190.0; // Limits for joint 3
 const float THETA_4_MIN = 0.0, THETA_4_MAX = 360.0; // Limits for joint 4
 
 // Maximum reach and height (in mm)
-const float MAX_REACH = 260.0; // Maximum horizontal reach
-const float MIN_HEIGHT = 0.0, MAX_HEIGHT = 260.0; // Minimum and maximum height
+const float MAX_REACH = 520.0; // Maximum horizontal reach
+const float MIN_HEIGHT = 0.0, MAX_HEIGHT = 630.0; // Minimum and maximum height
 
 // Global variables to store current position of each stepper motor
 long currentPositionStepper1 = 0;
@@ -117,33 +117,38 @@ void setup() {
 }
 
 void loop() {
+    static String inputBuffer = ""; // Buffer to accumulate input characters
     if (Serial.available() > 0) {
-        // Read the incoming string until newline character
-        String inputString = Serial.readStringUntil('\n');
-        
-        // Split the string into X, Y, and Z coordinates
-        int commaIndex1 = inputString.indexOf(',');
-        int commaIndex2 = inputString.indexOf(',', commaIndex1 + 1);
-        
-        float X = inputString.substring(0, commaIndex1).toFloat();
-        float Y = inputString.substring(commaIndex1 + 1, commaIndex2).toFloat();
-        float Z = inputString.substring(commaIndex2 + 1).toFloat();
-        
-        // Debug print the parsed coordinates
-        Serial.print("Moving to X: ");
-        Serial.print(X);
-        Serial.print(" Y: ");
-        Serial.print(Y);
-        Serial.print(" Z: ");
-        Serial.println(Z);
-        
-        // Calculate inverse kinematics and move
-        calculateIK(X, Y, Z);
-        moveSteppersToCalculatedPositions();
-        
-        // Ask for the next coordinates
-        Serial.println("Enter coordinates in the format X,Y,Z:");
+        char receivedChar = Serial.read(); // Read the incoming character
+        if (receivedChar == '\n') { // Check if the character is newline (Enter key)
+            // Split the buffered string into X, Y, and Z coordinates
+            int commaIndex1 = inputBuffer.indexOf(',');
+            int commaIndex2 = inputBuffer.indexOf(',', commaIndex1 + 1);
+            
+            float X = inputBuffer.substring(0, commaIndex1).toFloat();
+            float Y = inputBuffer.substring(commaIndex1 + 1, commaIndex2).toFloat();
+            float Z = inputBuffer.substring(commaIndex2 + 1).toFloat();
+            
+            // Debug print the parsed coordinates
+            Serial.print("Moving to X: ");
+            Serial.print(X);
+            Serial.print(" Y: ");
+            Serial.print(Y);
+            Serial.print(" Z: ");
+            Serial.println(Z);
+            
+            // Calculate inverse kinematics and move
+            calculateIK(X, Y, Z);
+            moveSteppersToCalculatedPositions();
+            
+            // Clear the buffer after processing
+            inputBuffer = "";
+            
+            // Ask for the next coordinates
+            Serial.println("Enter coordinates in the format X,Y,Z:");
+        } else {
+            // If not newline, accumulate the character into the buffer
+            inputBuffer += receivedChar;
+        }
     }
 }
-
-
