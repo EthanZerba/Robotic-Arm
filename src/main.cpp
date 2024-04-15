@@ -43,20 +43,20 @@ void calculateIK(float X, float Y, float Z) {
     }
 
     Theta_1 = atan2(Y, X) * (180.0 / PI);
-    float D = distance - L1;
-    float H = Z - L1;
-    float L_target = sqrt(D*D + H*H);
-    float acosArg1 = (L2*L2 + L_target*L_target - L3*L3) / (2 * L2 * L_target);
-    float acosArg2 = (L2*L2 + L3*L3 - L_target*L_target) / (2 * L2 * L3);
-    acosArg1 = constrain(acosArg1, -1.0, 1.0);
-    acosArg2 = constrain(acosArg2, -1.0, 1.0);
+    float radius = sqrt(X*X + Y*Y); // Horizontal distance from base to target
+    float height = Z; // Assuming Z is the vertical distance from the base level
 
-    float angle_L2_Ltarget = acos(acosArg1);
-    float angle_L3_Ltarget = acos(acosArg2);
-    float phi = atan2(H, D);
+    // Calculate the angles for steppers 2 and 3 using the 2D IK solution
+    // Assuming L1 is the length from the base to the first joint (not used in this calculation)
+    float D = sqrt(radius*radius + height*height); // Distance from the first joint to the target point
+    float angle1 = acos((L2*L2 + D*D - L3*L3) / (2 * L2 * D));
+    float angle2 = acos((L2*L2 + L3*L3 - D*D) / (2 * L2 * L3));
+    float baseAngle = atan2(height, radius);
 
-    Theta_2 = (phi + angle_L2_Ltarget) * (180.0 / PI);
-    Theta_3 = (angle_L3_Ltarget - phi) * (180.0 / PI);
+    Theta_2 = (baseAngle + angle1) * (180.0 / PI); // Convert to degrees
+    Theta_3 = (PI - angle2) * (180.0 / PI); // Convert to degrees and adjust for the arm configuration
+
+    // To keep L4 parallel to the ground, set its angle to counteract the total tilt
     Theta_4 = -(Theta_2 + Theta_3);
 
     Theta_1 = constrain(Theta_1, THETA_1_MIN, THETA_1_MAX);
