@@ -27,6 +27,12 @@ const float THETA_4_MIN = 0.0, THETA_4_MAX = 360.0; // Limits for joint 4
 const float MAX_REACH = 260.0; // Maximum horizontal reach
 const float MIN_HEIGHT = 0.0, MAX_HEIGHT = 260.0; // Minimum and maximum height
 
+// Global variables to store current position of each stepper motor
+long currentPositionStepper1 = 0;
+long currentPositionStepper2 = 0;
+long currentPositionStepper3 = 0;
+long currentPositionStepper4 = 0;
+
 // Calculated Angles
 float Theta_1, Theta_2, Theta_3, Theta_4; // Variables to store the calculated joint angles
 void calculateIK(float X, float Y, float Z) {
@@ -63,8 +69,8 @@ void initializeSteppers() {
     stepper1.setMaxSpeed(500);
     stepper1.setAcceleration(250);
     
-    stepper2.setMaxSpeed(10000);
-    stepper2.setAcceleration(5000);
+    stepper2.setMaxSpeed(7500);
+    stepper2.setAcceleration(3500);
     
     stepper3.setMaxSpeed(500);
     stepper3.setAcceleration(250);
@@ -78,11 +84,17 @@ void moveSteppersToCalculatedPositions() {
     int steps3 = (Theta_3 * stepsPerRevolution) / 360.0;
     int steps4 = (Theta_4 * stepsPerRevolution28BYJ48) / 360.0; // Adjusted for 28BYJ-48
 
-    // Set target positions for all steppers
-    stepper1.moveTo(stepper1.currentPosition() + steps1);
-    stepper2.moveTo(stepper2.currentPosition() + steps2);
-    stepper3.moveTo(stepper3.currentPosition() + steps3);
-    stepper4.moveTo(stepper4.currentPosition() + steps4);
+    // Move to new positions
+    stepper1.moveTo(currentPositionStepper1 + steps1);
+    stepper2.moveTo(currentPositionStepper2 + steps2);
+    stepper3.moveTo(currentPositionStepper3 + steps3);
+    stepper4.moveTo(currentPositionStepper4 + steps4);
+
+    // Update current positions
+    currentPositionStepper1 += steps1;
+    currentPositionStepper2 += steps2;
+    currentPositionStepper3 += steps3;
+    currentPositionStepper4 += steps4;
 
     // Run all steppers to their target positions simultaneously
     while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || 
@@ -133,4 +145,5 @@ void loop() {
         Serial.println("Enter coordinates in the format X,Y,Z:");
     }
 }
+
 
