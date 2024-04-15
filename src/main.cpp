@@ -80,7 +80,7 @@ void initializeSteppers() {
 }
 void moveSteppersToCalculatedPositions() {
     int steps1 = (Theta_1 * stepsPerRevolution) / 360.0;
-    int steps2 = (Theta_2 * stepsPerRevolution * 27) / 360.0; // Gearbox adjustment
+    int steps2 = (Theta_2 * stepsPerRevolution * 26.85) / 360.0; // Gearbox adjustment
     int steps3 = (Theta_3 * stepsPerRevolution) / 360.0;
     int steps4 = (Theta_4 * stepsPerRevolution28BYJ48) / 360.0; // Adjusted for 28BYJ-48
 
