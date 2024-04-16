@@ -5,11 +5,11 @@
 
 extern AccelStepper stepper1, stepper2, stepper3; // Assuming these are defined elsewhere
 // Global variables to store current position of each stepper motor
-extern long currentPositionStepper1, currentPositionStepper2, currentPositionStepper3, currentPositionStepper4;
+long currentPositionStepper1, currentPositionStepper2, currentPositionStepper3, currentPositionStepper4;
+float currentTheta1, currentTheta2, currentTheta3, currentTheta4;
 
-// Calculated Angles
-extern float Theta_1, Theta_2, Theta_3, Theta_4; // Variables to store the calculated joint angles
-extern float currentTheta1, currentTheta2, currentTheta3, currentTheta4; // Variables to store the current joint angles
+
+
 
 // Steps per revolution for stepper motors
 const int stepsPerRevolution = 200 * 16; // For NEMA 17 stepper motors (with microstepping)

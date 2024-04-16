@@ -2,8 +2,22 @@
 #include <Arduino.h>
 #include "GlobalVars.h"
 
-extern float Theta_1, Theta_2, Theta_3; // Declare as extern if used across multiple files
-extern float currentX, currentY, currentZ;
+float Theta_1, Theta_2, Theta_3, Theta_4; // Declare as extern if used across multiple files
+float targetX, targetY, targetZ;
+
+
+float currentX = 495.0;
+float currentY = 0.0;
+float currentZ = 0.0;
+
+// Arm Segment Lengths (in mm)
+const float L1 = 110.0; // Base to first joint
+const float L2 = 255.0; // First to second joint
+const float L3 = 240.0; // Second to third joint
+const float L4 = 0.0;  // Third joint to end effector
+
+const float MAX_REACH = 495.0;
+const float MIN_HEIGHT = 0.0, MAX_HEIGHT = 495.0;
 
 void calculateIK(float X, float Y, float Z) {
     Serial.print("Received Target: X=");
