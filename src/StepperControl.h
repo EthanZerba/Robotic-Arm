@@ -1,7 +1,11 @@
-  #ifndef STEPPER_CONTROL_H
-  #define STEPPER_CONTROL_H
+#ifndef STEPPER_CONTROL_H
+#define STEPPER_CONTROL_H
 
-  void moveSteppersToCalculatedPositions();
-  void initializeSteppers();
+void disableSteppers();
+void enableSteppers();
 
-  #endif
+void moveSteppersToCalculatedPositions();
+void initializeSteppers();
+
+
+#endif

@@ -56,6 +56,7 @@ void calculateIK(float X, float Y, float Z) {
 
         Theta_2 = angle2 * (180.0 / PI);
         Theta_3 = (PI - angle3) * (180.0 / PI); // Adjusting based on the physical arrangement
+        Theta_4 = - (Theta_2 + Theta_3);
     }
 
     Serial.print("Calculated Theta_1: ");
@@ -64,6 +65,8 @@ void calculateIK(float X, float Y, float Z) {
     Serial.println(Theta_2);
     Serial.print("Calculated Theta_3: ");
     Serial.println(Theta_3);
+    Serial.print("Calculated Theta_4: ");
+    Serial.println(Theta_4);
 
     // Set target positions for global use
     targetX = X;

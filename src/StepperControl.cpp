@@ -21,6 +21,19 @@ AccelStepper stepper2(AccelStepper::DRIVER, 19, 21); // Stepper motor 2 using DR
 AccelStepper stepper3(AccelStepper::DRIVER, 22, 23); // Stepper motor 3 using DRIVER mode
 AccelStepper stepper4(AccelStepper::FULL4WIRE, 13, 12, 14, 27); // 28BYJ-48 motor with ULN2003 driver
 
+void disableSteppers() {
+    stepper1.disableOutputs();
+    stepper2.disableOutputs();
+    stepper3.disableOutputs();
+    stepper4.disableOutputs();
+}
+
+void enableSteppers() {
+    stepper1.enableOutputs();
+    stepper2.enableOutputs();
+    stepper3.enableOutputs();
+    stepper4.enableOutputs();
+}
 
 void moveSteppersToCalculatedPositions() {
     Serial.println("Moving to the calculated positions...");
@@ -49,17 +62,21 @@ void moveSteppersToCalculatedPositions() {
     stepper1.move(steps1);
     stepper2.move(steps2);
     stepper3.move(steps3);
+    stepper4.move(steps4);
+
 
     // Update the current angles to the new angles after movement
     currentTheta1 = Theta_1;
     currentTheta2 = Theta_2;
     currentTheta3 = Theta_3;
+    currentTheta4 = Theta_4;
 
     // Run the steppers to reach the target positions
     while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || stepper3.distanceToGo() != 0) {
         stepper1.run();
         stepper2.run();
         stepper3.run();
+        stepper4.run();
 
     }
 
@@ -67,6 +84,7 @@ void moveSteppersToCalculatedPositions() {
     currentPositionStepper1 += steps1;
     currentPositionStepper2 += steps2;
     currentPositionStepper3 += steps3;
+    currentPositionStepper4 += steps4;
 
     currentX = targetX;
     currentY = targetY;
