@@ -38,31 +38,52 @@ long currentPositionStepper1, currentPositionStepper2, currentPositionStepper3, 
 
 // Calculated Angles
 float Theta_1, Theta_2, Theta_3, Theta_4; // Variables to store the calculated joint angles
+float currentTheta1, currentTheta2, currentTheta3, currentTheta4; // Variables to store the current joint angles
 
 void moveSteppersToCalculatedPositions() {
-    int steps1 = (Theta_1 * stepsPerRevolution) / 360.0;
-    int steps2 = (Theta_2 * stepsPerRevolution) / 360.0;
-    int steps3 = (Theta_3 * stepsPerRevolution) / 360.0;
-    int steps4 = (Theta_4 * stepsPerRevolution28BYJ48) / 360.0;
+    Serial.println("Moving to the calculated positions...");
+    Serial.print(Theta_1);
+    Serial.print(", ");
+    Serial.println(currentTheta1);
+   
+    Serial.print(Theta_2);
+    Serial.print(", ");
+    Serial.println(currentTheta2);
 
-    stepper1.moveTo(currentPositionStepper1 + steps1);
-    stepper2.moveTo(currentPositionStepper2 + steps2);
-    stepper3.moveTo(currentPositionStepper3 + steps3);
-    stepper4.moveTo(currentPositionStepper4 + steps4);
+    Serial.print(Theta_3);
+    Serial.print(", ");
+    Serial.println(currentTheta3);
 
-    while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || 
-           stepper3.distanceToGo() != 0 || stepper4.distanceToGo() != 0) {
+    Serial.print(Theta_4);
+    Serial.print(", ");
+    Serial.println(currentTheta4);
+
+    int steps1 = ((Theta_1 - currentTheta1) * stepsPerRevolution) / 360.0;
+    int steps2 = ((Theta_2 - currentTheta2) * stepsPerRevolution * 26.85) / 360.0;
+    int steps3 = ((Theta_3 - currentTheta3) * stepsPerRevolution) / 360.0;
+    int steps4 = ((Theta_4 - currentTheta4) * stepsPerRevolution28BYJ48) / 360.0;
+
+    // Move the steppers by the calculated step differences
+    stepper1.move(steps1);
+    stepper2.move(steps2);
+    stepper3.move(steps3);
+
+    // Update the current angles to the new angles after movement
+    currentTheta1 = Theta_1;
+    currentTheta2 = Theta_2;
+    currentTheta3 = Theta_3;
+
+    // Run the steppers to reach the target positions
+    while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || stepper3.distanceToGo() != 0) {
         stepper1.run();
         stepper2.run();
         stepper3.run();
-        stepper4.run();
     }
 
     // Update global position variables assuming the target was reached
     currentPositionStepper1 += steps1;
     currentPositionStepper2 += steps2;
     currentPositionStepper3 += steps3;
-    currentPositionStepper4 += steps4;
 
     currentX = targetX;
     currentY = targetY;
@@ -77,42 +98,41 @@ void calculateIK(float X, float Y, float Z) {
     Serial.print(", Z=");
     Serial.println(Z);
 
-    // Directly calculate angles based on the target position
-    float angle1 = atan2(Y, X) * (180.0 / PI);
-    Theta_1 = angle1;
+    // Base rotation
+    Theta_1 = atan2(Y, X) * (180.0 / PI);
+
+    // Effective horizontal and vertical distances
+    float r = sqrt(X * X + Y * Y);
+    float dx = r; 
+    float dy = Z;
+
+    // Handle special fully extended cases
+    if (dx == MAX_REACH && dy == 0) { // Fully extended horizontally
+        if (X > 0) {
+            Theta_1 = 0; // Positive X
+        } else {
+            Theta_1 = 180; // Negative X
+        }
+        Theta_2 = 0;
+        Theta_3 = 0;
+    } else if (dy == MAX_HEIGHT && dx == 0) { // Fully extended vertically
+        Theta_1 = 0; // Theta_1 does not matter, could set to initial
+        Theta_2 = 90;
+        Theta_3 = 0;
+    } else {
+        // General case using the cosine laws
+        float D = sqrt(dx * dx + dy * dy);
+        float angle2 = acos((L2 * L2 + D * D - L3 * L3) / (2 * L2 * D));
+        float angle3 = acos((L2 * L2 + L3 * L3 - D * D) / (2 * L2 * L3));
+
+        Theta_2 = angle2 * (180.0 / PI);
+        Theta_3 = (PI - angle3) * (180.0 / PI); // Adjusting based on the physical arrangement
+    }
+
     Serial.print("Calculated Theta_1: ");
     Serial.println(Theta_1);
-
-    float dx = sqrt(X * X + Y * Y);
-    float dy = Z;  // Assuming Z includes the height of the first joint
-    Serial.print("Intermediate dx: ");
-    Serial.println(dx);
-    Serial.print("Intermediate dy: ");
-    Serial.println(dy);
-
-    float D = sqrt(dx * dx + dy * dy);
-    Serial.print("Intermediate D: ");
-    Serial.println(D);
-
-    // Calculate Theta_2 based on the position
-    if (dx == 0 && dy > 0) {
-        Theta_2 = 90;  // Directly set to 90 degrees if directly above the base
-    } else {
-        float cosAngle2 = (L2 * L2 + D * D - L3 * L3) / (2 * L2 * D);
-        cosAngle2 = constrain(cosAngle2, -1.0, 1.0);
-        Theta_2 = acos(cosAngle2) * (180.0 / PI);
-    }
     Serial.print("Calculated Theta_2: ");
     Serial.println(Theta_2);
-
-    // Calculate Theta_3 based on the position
-    if (D == L2) {
-        Theta_3 = 0;  // If the third segment should align straight with the second
-    } else {
-        float cosAngle3 = (L2 * L2 + L3 * L3 - D * D) / (2 * L2 * L3);
-        cosAngle3 = constrain(cosAngle3, -1.0, 1.0);
-        Theta_3 = 180 - acos(cosAngle3) * (180.0 / PI);
-    }
     Serial.print("Calculated Theta_3: ");
     Serial.println(Theta_3);
 
@@ -120,8 +140,6 @@ void calculateIK(float X, float Y, float Z) {
     targetX = X;
     targetY = Y;
     targetZ = Z;
-
-    moveSteppersToCalculatedPositions();
 }
 
 
@@ -176,16 +194,33 @@ bool parseInput(const String& input, float& X, float& Y, float& Z) {
 
 void loop() {
     static String inputBuffer = "";  // Buffer to store input characters
+    static bool isReadyForNewInput = true;  // Flag to indicate readiness for new input
+
+    if (isReadyForNewInput) {
+        Serial.print("Current Position: X=");
+        Serial.print(currentX);
+        Serial.print(", Y=");
+        Serial.print(currentY);
+        Serial.print(", Z=");
+        Serial.println(currentZ);
+        Serial.println("Enter new coordinates in the format X,Y,Z:");
+        isReadyForNewInput = false;  // Reset flag until next input is processed
+    }
+
     if (Serial.available() > 0) {
         char inChar = (char)Serial.read();  // Read the incoming character
         Serial.print(inChar);  // Echo the character back to the terminal
 
-        if (inChar == '\r') {  // Check for carriage return (Enter key)
+        if (inChar == '\r' || inChar == '\n') {  // Check for carriage return or newline (Enter key)
             Serial.println();  // Move to a new line
             float X, Y, Z;
             if (parseInput(inputBuffer, X, Y, Z)) {
-                calculateIK(X, Y, Z);
-                moveSteppersToCalculatedPositions();
+                calculateIK(X, Y, Z);  // Calculate inverse kinematics for new target
+                moveSteppersToCalculatedPositions();  // Move steppers to the new calculated positions
+                isReadyForNewInput = true;  // Set flag to true as the robot is ready for new input
+            } else {
+                Serial.println("Invalid input. Please enter coordinates in the format X,Y,Z.");
+                isReadyForNewInput = true;  // Allow retrying input
             }
             inputBuffer = "";  // Clear the buffer after processing
         } else if (inChar == '\b') {  // Handle backspace
@@ -198,4 +233,3 @@ void loop() {
         }
     }
 }
-
