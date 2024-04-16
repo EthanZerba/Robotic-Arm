@@ -5,7 +5,7 @@
 AccelStepper stepper1(AccelStepper::DRIVER, 5, 18); // Stepper motor 1 using DRIVER mode
 AccelStepper stepper2(AccelStepper::DRIVER, 19, 21); // Stepper motor 2 using DRIVER mode
 AccelStepper stepper3(AccelStepper::DRIVER, 22, 23); // Stepper motor 3 using DRIVER mode
-AccelStepper stepper4(AccelStepper::FULL4WIRE, 12, 12, 14, 27); // 28BYJ-48 motor with ULN2003 driver
+AccelStepper stepper4(AccelStepper::FULL4WIRE, 13, 12, 14, 27); // 28BYJ-48 motor with ULN2003 driver
 
 // Arm Segment Lengths (in mm)
 const float L1 = 110.0; // Base to first joint
@@ -66,14 +66,14 @@ void calculateIK(float X, float Y, float Z) {
 }
 
 void initializeSteppers() {
-    stepper1.setMaxSpeed(500);
-    stepper1.setAcceleration(250);
+    stepper1.setMaxSpeed(250);
+    stepper1.setAcceleration(50);
     
-    stepper2.setMaxSpeed(7500);
-    stepper2.setAcceleration(3500);
+    stepper2.setMaxSpeed(1000);
+    stepper2.setAcceleration(250);
     
-    stepper3.setMaxSpeed(500);
-    stepper3.setAcceleration(250);
+    stepper3.setMaxSpeed(250);
+    stepper3.setAcceleration(50);
     
     stepper4.setMaxSpeed(500);
     stepper4.setAcceleration(250);
