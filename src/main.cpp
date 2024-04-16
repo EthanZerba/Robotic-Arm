@@ -147,8 +147,8 @@ void initializeSteppers() {
     // Setup for stepper motors with speed and acceleration
     stepper1.setMaxSpeed(250);
     stepper1.setAcceleration(50);
-    stepper2.setMaxSpeed(1000);
-    stepper2.setAcceleration(250);
+    stepper2.setMaxSpeed(6712);
+    stepper2.setAcceleration(1347);
     stepper3.setMaxSpeed(250);
     stepper3.setAcceleration(50);
     stepper4.setMaxSpeed(500);
