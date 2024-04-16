@@ -17,28 +17,32 @@ void resetSteppersForCalibration() {
     Serial.println("Steppers disabled. Move to calibration position and press 'c' to continue.");
 }
 
-void processMultipleCoordinates(int count) {
-    for (int i = 0; i < count; i++) {
-        if (!Serial.available()) {
-            delay(100);  // Wait for input
-            continue;
-        }
-        String input = Serial.readStringUntil(',');
-        coordinateQueue.push(std::string(input.c_str()));
+std::vector<String> splitString(const String& str, char delim) {
+    std::vector<String> tokens;
+    int start = 0;
+    int end = str.indexOf(delim);
+    while (end != -1) {
+        tokens.push_back(str.substring(start, end));
+        start = end + 1;
+        end = str.indexOf(delim, start);
     }
-    Serial.println("Processing queued coordinates.");
-    while (!coordinateQueue.empty()) {
-        std::string stdCoords = coordinateQueue.front();
-        String coords = String(stdCoords.c_str());  // Convert std::string to String
+    tokens.push_back(str.substring(start));  // Add the last token
+    return tokens;
+}
+
+void processMultipleCoordinates() {
+    Serial.println("Enter multiple coordinates separated by spaces, then press Enter to process:");
+    String input = Serial.readStringUntil('\n');  // Read the entire line until Enter is pressed
+    std::vector<String> coordinates = splitString(input, ' ');  // Split the input string by spaces
+
+    for (String coord : coordinates) {
         float X, Y, Z;
-        if (parseInput(coords, X, Y, Z)) {
+        if (parseInput(coord, X, Y, Z)) {
             calculateIK(X, Y, Z);
             moveSteppersToCalculatedPositions();
         }
     }
 }
-
-
 
 void promptUserForInput() {
     Serial.print("Current Position: X=");
@@ -63,9 +67,8 @@ void handleSerialCommunication() {
 void processCommand(const String& input) {
     if (input == "reset") {
         resetSteppersForCalibration();
-    } else if (input.startsWith("multi")) {
-        int count = input.substring(6).toInt();  // Extract count after "multi "
-        processMultipleCoordinates(count);
+    } else if (input == "multi") {
+        processMultipleCoordinates();  // No count needed
     } else {
         float X, Y, Z;
         if (parseInput(input, X, Y, Z)) {
