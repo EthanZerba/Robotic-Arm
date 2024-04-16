@@ -8,7 +8,7 @@ const int stepsPerRevolution3 = 200 * 16; // For NEMA 17 stepper motors (with mi
 const int stepsPerRevolution28BYJ48 = 4096; // For the 28BYJ-48 stepper motor
 
 // For example, using a driver with step and direction pins connected to pins 2 and 3
-AccelStepper stepper(AccelStepper::FULL4WIRE, 13, 12, 14, 27); // 28BYJ-48 motor with ULN2003 driver
+AccelStepper stepper(AccelStepper::DRIVER, 22, 23); // Stepper motor 3 using DRIVER mode
 
 void setup() {
   // Set the maximum speed and acceleration:
@@ -16,7 +16,7 @@ void setup() {
   stepper.setAcceleration(100); // steps per second squared
 
   // Calculate the number of steps for 90 degrees rotation
-  int stepsFor90Degrees = (stepsPerRevolution28BYJ48 / 4);
+  int stepsFor90Degrees = (stepsPerRevolution3 / 4);
   
   // Move the stepper motor 90 degrees
   stepper.move(stepsFor90Degrees);
