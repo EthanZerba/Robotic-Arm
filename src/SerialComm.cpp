@@ -33,15 +33,23 @@ std::vector<String> splitString(const String& str, char delim) {
 void processMultipleCoordinates() {
     Serial.println("Enter multiple coordinates separated by spaces, then press Enter to process:");
     String input = Serial.readStringUntil('\n');  // Read the entire line until Enter is pressed
+    input.trim();  // Remove any leading/trailing whitespace
     std::vector<String> coordinates = splitString(input, ' ');  // Split the input string by spaces
 
+    Serial.println("Processing coordinates:");
     for (String coord : coordinates) {
+        Serial.print("Processing: ");
+        Serial.println(coord);
         float X, Y, Z;
         if (parseInput(coord, X, Y, Z)) {
+            Serial.println("Parsed successfully, calculating IK and moving steppers.");
             calculateIK(X, Y, Z);
             moveSteppersToCalculatedPositions();
+        } else {
+            Serial.println("Failed to parse coordinates.");
         }
     }
+    isReadyForNewInput = true;  // Allow new input after processing
 }
 
 void promptUserForInput() {
@@ -68,7 +76,7 @@ void processCommand(const String& input) {
     if (input == "reset") {
         resetSteppersForCalibration();
     } else if (input == "multi") {
-        processMultipleCoordinates();  // No count needed
+        processMultipleCoordinates();  // Trigger processing of multiple coordinates
     } else {
         float X, Y, Z;
         if (parseInput(input, X, Y, Z)) {
@@ -106,7 +114,10 @@ void readSerialInput() {
 bool parseInput(const String& input, float& X, float& Y, float& Z) {
     int commaIndex1 = input.indexOf(',');
     int commaIndex2 = input.indexOf(',', commaIndex1 + 1);
-    if (commaIndex1 == -1 || commaIndex2 == -1) return false;
+    if (commaIndex1 == -1 || commaIndex2 == -1) {
+        Serial.println("Error: Incorrect format, commas missing.");
+        return false;
+    }
 
     X = input.substring(0, commaIndex1).toFloat();
     Y = input.substring(commaIndex1 + 1, commaIndex2).toFloat();
