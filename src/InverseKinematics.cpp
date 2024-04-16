@@ -30,7 +30,7 @@ void calculateIK(float X, float Y, float Z) {
     Theta_1 = atan2(Y, X) * (180.0 / PI);
 
     // Effective horizontal and vertical distances
-    float r = sqrt(X * X + Y * Y);
+    float r = sqrt(abs(X * X) + abs(Y * Y));
     float dx = r; 
     float dy = Z;
 
@@ -44,7 +44,7 @@ void calculateIK(float X, float Y, float Z) {
         Theta_2 = 0;
         Theta_3 = 0;
     } else if (dy == MAX_HEIGHT && dx == 0) { // Fully extended vertically
-        Theta_1 = 0; // Theta_1 does not matter, could set to initial
+        Theta_1 = currentTheta1; // Theta_1 does not matter, could set to initial
         Theta_2 = 90;
         Theta_3 = 0;
     } else {
