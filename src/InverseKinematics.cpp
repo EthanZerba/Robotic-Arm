@@ -5,7 +5,6 @@
 float Theta_1, Theta_2, Theta_3, Theta_4; // Declare as extern if used across multiple files
 float targetX, targetY, targetZ;
 
-
 float currentX = 495.0;
 float currentY = 0.0;
 float currentZ = 0.0;

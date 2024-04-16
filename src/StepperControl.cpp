@@ -64,7 +64,6 @@ void moveSteppersToCalculatedPositions() {
     stepper3.move(steps3);
     stepper4.move(steps4);
 
-
     // Update the current angles to the new angles after movement
     currentTheta1 = Theta_1;
     currentTheta2 = Theta_2;
@@ -90,9 +89,6 @@ void moveSteppersToCalculatedPositions() {
     currentY = targetY;
     currentZ = targetZ;
 }
-
-
-
 
 void initializeSteppers() {
     // Setup for stepper motors with speed and acceleration

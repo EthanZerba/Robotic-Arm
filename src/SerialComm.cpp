@@ -38,19 +38,7 @@ void processMultipleCoordinates(int count) {
     }
 }
 
-void handleSerialCommunication() {
-    if (Serial.available()) {
-        String command = Serial.readStringUntil('\n');
-        if (command == "reset") {
-            resetSteppersForCalibration();
-        } else if (command.startsWith("multi")) {
-            int count = command.substring(6).toInt();  // Assuming command format is "multi 5"
-            processMultipleCoordinates(count);
-        } else {
-            processSerialInput(command);  // Existing single coordinate processing
-        }
-    }
-}
+
 
 void promptUserForInput() {
     Serial.print("Current Position: X=");
@@ -59,37 +47,56 @@ void promptUserForInput() {
     Serial.print(currentY);
     Serial.print(", Z=");
     Serial.println(currentZ);
-    Serial.println("Enter new coordinates in the format X,Y,Z:");
+    Serial.println("Enter reset to calibrate or multi for multiple coordinates. or Enter coordinates in the format X,Y,Z:");
     isReadyForNewInput = false;  // Reset flag until next input is processed
 }
 
+void handleSerialCommunication() {
+    if (isReadyForNewInput) {
+        promptUserForInput();
+        isReadyForNewInput = false;  // Reset flag until next input is processed
+    }
+
+    readSerialInput();  // This function will handle the reading and processing of serial input
+}
+
+void processCommand(const String& input) {
+    if (input == "reset") {
+        resetSteppersForCalibration();
+    } else if (input.startsWith("multi")) {
+        int count = input.substring(6).toInt();  // Extract count after "multi "
+        processMultipleCoordinates(count);
+    } else {
+        float X, Y, Z;
+        if (parseInput(input, X, Y, Z)) {
+            calculateIK(X, Y, Z);
+            moveSteppersToCalculatedPositions();
+            isReadyForNewInput = true;  // Set flag to true as the robot is ready for new input
+        } else {
+            Serial.println("Invalid input. Please enter coordinates in the format X,Y,Z.");
+            isReadyForNewInput = true;  // Allow retrying input
+        }
+    }
+}
+
+
 void readSerialInput() {
-    if (Serial.available() > 0) {
+    while (Serial.available() > 0) {
         char inChar = (char)Serial.read();  // Read the incoming character
         Serial.print(inChar);  // Echo the character back to the terminal
 
         if (inChar == '\r' || inChar == '\n') {
-            Serial.println();  // Move to a new line
-            processSerialInput(inputBuffer);
-            inputBuffer = "";  // Clear the buffer after processing
+            if (inputBuffer.length() > 0) {  // Check if there's something to process
+                Serial.println();  // Move to a new line
+                processCommand(inputBuffer);
+                inputBuffer = "";  // Clear the buffer after processing
+            }
         } else if (inChar == '\b' && inputBuffer.length() > 0) {
             inputBuffer.remove(inputBuffer.length() - 1);  // Remove last character from buffer
             Serial.print("\b \b");  // Erase the last character on the terminal
         } else {
             inputBuffer += inChar;  // Add character to buffer
         }
-    }
-}
-
-void processSerialInput(const String& inputBuffer) {
-    float X, Y, Z;
-    if (parseInput(inputBuffer, X, Y, Z)) {
-        calculateIK(X, Y, Z);  // Calculate inverse kinematics for new target
-        moveSteppersToCalculatedPositions();  // Move steppers to the new calculated positions
-        isReadyForNewInput = true;  // Set flag to true as the robot is ready for new input
-    } else {
-        Serial.println("Invalid input. Please enter coordinates in the format X,Y,Z.");
-        isReadyForNewInput = true;  // Allow retrying input
     }
 }
 
