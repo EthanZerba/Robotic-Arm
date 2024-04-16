@@ -9,6 +9,7 @@
 
 static String inputBuffer = "";  // Buffer to store input characters
 static bool isReadyForNewInput = true;  // Flag to indicate readiness for new input
+static bool expectingMultipleCoordinates = false;  // Flag to check if multiple coordinates are expecte
 
 std::queue<std::string> coordinateQueue;
 
@@ -30,23 +31,13 @@ std::vector<String> splitString(const String& str, char delim) {
     return tokens;
 }
 
-void processMultipleCoordinates() {
-    Serial.println("Enter multiple coordinates separated by spaces, then press Enter to process:");
-    String input = Serial.readStringUntil('\n');  // Read the entire line until Enter is pressed
-    input.trim();  // Remove any leading/trailing whitespace
+void processMultipleCoordinates(const String& input) {
     std::vector<String> coordinates = splitString(input, ' ');  // Split the input string by spaces
-
-    Serial.println("Processing coordinates:");
     for (String coord : coordinates) {
-        Serial.print("Processing: ");
-        Serial.println(coord);
         float X, Y, Z;
         if (parseInput(coord, X, Y, Z)) {
-            Serial.println("Parsed successfully, calculating IK and moving steppers.");
             calculateIK(X, Y, Z);
             moveSteppersToCalculatedPositions();
-        } else {
-            Serial.println("Failed to parse coordinates.");
         }
     }
     isReadyForNewInput = true;  // Allow new input after processing
@@ -72,11 +63,10 @@ void handleSerialCommunication() {
     readSerialInput();  // This function will handle the reading and processing of serial input
 }
 
-void processCommand(const String& input) {
-    if (input == "reset") {
-        resetSteppersForCalibration();
-    } else if (input == "multi") {
-        processMultipleCoordinates();  // Trigger processing of multiple coordinates
+void handleCoordinateInput(const String& input) {
+    if (expectingMultipleCoordinates) {
+        processMultipleCoordinates(input);
+        expectingMultipleCoordinates = false;  // Reset flag after processing
     } else {
         float X, Y, Z;
         if (parseInput(input, X, Y, Z)) {
@@ -87,6 +77,16 @@ void processCommand(const String& input) {
             Serial.println("Invalid input. Please enter coordinates in the format X,Y,Z.");
             isReadyForNewInput = true;  // Allow retrying input
         }
+    }
+}
+void processCommand(const String& input) {
+    if (input == "reset") {
+        resetSteppersForCalibration();
+    } else if (input == "multi") {
+        expectingMultipleCoordinates = true;  // Set flag to true
+        Serial.println("Enter coordinates separated by spaces:");
+    } else {
+        handleCoordinateInput(input);
     }
 }
 
