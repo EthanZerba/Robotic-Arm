@@ -68,7 +68,7 @@ void calculateIK(float X, float Y, float Z) {
     Serial.println(Theta_3);
 
     // Assuming Theta_4 is not used in this two-link model
-    Theta_4 = (abs(Theta_2) + abs(Theta_3)) * -1;
+    Theta_4 = (Theta_2 + Theta_3) * -1;
 
     Serial.print("Calculated Theta_4: ");
     Serial.println(Theta_4);
