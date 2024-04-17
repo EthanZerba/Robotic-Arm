@@ -27,22 +27,41 @@ void calculateIK(float X, float Y, float Z) {
     Serial.print(", Z=");
     Serial.println(Z);
 
-    // Base rotation
-    Theta_1 = atan2(Y, X) * (180.0 / PI);
-    Serial.print("Calculated Theta_1 (Base rotation): ");
+    // Check if the target is within the physical limits of the robot
+    float distance = sqrt(X * X + Y * Y);
+    if (Z < MIN_HEIGHT || Z > MAX_HEIGHT || distance > MAX_REACH) {
+        Serial.println("Error: Target position is out of reach.");
+        return; // Exit the function if the target is out of reach
+    }
+
+    // Handle specific edge cases with hardcoded joint angles
+    if (X == 0 && Y == 0 && Z == MAX_HEIGHT) {
+        // Directly above the base at maximum height
+        Theta_1 = 0; // Base rotation
+        Theta_2 = 90; // First joint straight up
+        Theta_3 = 0; // Second joint straight up
+        Theta_4 = 90; // Assuming unused
+    } else if ((X == MAX_REACH && Y == 0) || (X == -MAX_REACH && Y == 0) || (Y == MAX_REACH && X == 0) || (Y == -MAX_REACH && X == 0)) {
+        // Maximum reach on the X or Y axis, including negative directions
+        Theta_1 = atan2(Y, X) * (180.0 / PI);
+        Theta_2 = 0; // First joint straight forward
+        Theta_3 = 0; // Second joint straight
+        Theta_4 = 0; // Assuming unused
+    } else {
+        // Normal IK calculations
+        Theta_1 = atan2(Y, X) * (180.0 / PI);
+        float r = sqrt(X * X + Y * Y);
+        float dx = r;
+        float dy = Z;
+        float q2 = (acos((dx*dx+dy*dy - L1 * L1 - L2 * L2) / (2 * L1 * L2))) * -1;
+        float q1 = atan2(dy, dx) + atan2(L2 * sin(q2), L1 + L2 * cos(q2));
+
+        Theta_2 = q1 * (180.0 / PI);
+        Theta_3 = (q2 * (180.0 / PI)) * -1;
+    }
+
+    Serial.print("Calculated Theta_1: ");
     Serial.println(Theta_1);
-
-    // Calculate the distance from the base to the point (X, Y)
-    float r = sqrt(X * X + Y * Y);
-    float dx = r;
-    float dy = Z;
-    // Calculate Theta_2 and Theta_3 using the provided equations
-    float q2 = (acos((dx*dx+dy*dy - L1 * L1 - L2 * L2) / (2 * L1 * L2))) * -1;
-    float q1 = atan2(dy, dx) + atan2(L2 * sin(q2), L1 + L2 * cos(q2));
-
-    Theta_2 = q1 * (180.0 / PI);
-    Theta_3 = (q2 * (180.0 / PI)) * -1;
-
     Serial.print("Calculated Theta_2: ");
     Serial.println(Theta_2);
     Serial.print("Calculated Theta_3: ");
